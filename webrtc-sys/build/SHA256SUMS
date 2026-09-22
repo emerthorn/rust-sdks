@@ -1,4 +1,8 @@
-# sha256 of every webrtc-<triple>.zip of the release named by WEBRTC_TAG in
-# src/lib.rs, in `sha256sum` format. Copy the SHA256SUMS asset of the GitHub
-# release of emerthorn/veilmesh-webrtc-build here verbatim. Empty until the
-# first release is published: builds then require LK_CUSTOM_WEBRTC.
+28bd8118b5cc23ac5d1f658e55e1500d6e1f8b41ab81ff30b31f19cdb4309513  webrtc-android-arm-release.zip
+0c4cc670170395c249120f3041153a2c8307298a9b4932663406cdf67de14507  webrtc-android-arm64-release.zip
+44f5d5b7360b052c25d6afa699498597e4c7744538d2c7ec7a74de36574d41c9  webrtc-android-x64-release.zip
+169142121ad46143761a3866e8262007e1758536f27ca2ebe0f54e9e2515783f  webrtc-ios-device-arm64-release.zip
+73f3d7030a70ec6c465ea0d2836fabd78e72af95aa7a312dd12ada398cda50e0  webrtc-ios-simulator-arm64-release.zip
+4e3026756d1df77adb0093061344e66d1abe024cbf3e6bfd75bc5fe88a340939  webrtc-linux-x64-release.zip
+53a22829e77b8d9aa1fe55f3a3341ea5efd5f35d9104663ce5d32c99ca6513a9  webrtc-mac-arm64-release.zip
+1baa410f1dd690560e3a7adc36c9ee58ee9b3410ad5c8b2609f24aefd481f783  webrtc-mac-x64-release.zip

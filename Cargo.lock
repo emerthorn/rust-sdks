@@ -8340,6 +8340,7 @@ dependencies = [
  "reqwest",
  "scratch",
  "semver",
+ "sha2",
  "zip",
 ]
 
