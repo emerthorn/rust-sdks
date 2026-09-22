@@ -1,0 +1,4 @@
+# sha256 of every webrtc-<triple>.zip of the release named by WEBRTC_TAG in
+# src/lib.rs, in `sha256sum` format. Copy the SHA256SUMS asset of the GitHub
+# release of emerthorn/veilmesh-webrtc-build here verbatim. Empty until the
+# first release is published: builds then require LK_CUSTOM_WEBRTC.

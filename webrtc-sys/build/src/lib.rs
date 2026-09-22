@@ -28,7 +28,14 @@ use regex::Regex;
 use reqwest::StatusCode;
 
 pub const SCRATH_PATH: &str = "livekit_webrtc";
-pub const WEBRTC_TAG: &str = "webrtc-89d790b";
+// VeilMesh (D5): prebuilt libwebrtc comes from our own build pipeline, pinned by
+// tag AND sha256. `SHA256SUMS` next to this file is the release's checksum list;
+// a triple missing from it is a hard error (never silently unpinned), unless
+// the caller points `LK_CUSTOM_WEBRTC` at a local build.
+pub const WEBRTC_TAG: &str = "webrtc-89d790b-veilmesh.1";
+pub const WEBRTC_RELEASE_BASE: &str =
+    "https://github.com/emerthorn/veilmesh-webrtc-build/releases/download";
+const WEBRTC_SHA256SUMS: &str = include_str!("../SHA256SUMS");
 pub const IGNORE_DEFINES: [&str; 2] = ["CR_CLANG_REVISION", "CR_XCODE_VERSION"];
 
 pub fn target_os() -> String {
@@ -100,10 +107,44 @@ pub fn prebuilt_dir() -> path::PathBuf {
 
 pub fn download_url() -> String {
     format!(
-        "https://github.com/livekit/rust-sdks/releases/download/{}/{}.zip",
+        "{}/{}/{}.zip",
+        WEBRTC_RELEASE_BASE,
         WEBRTC_TAG,
         format!("webrtc-{}", webrtc_triple())
     )
+}
+
+/// Expected sha256 (hex) of `webrtc-{triple}.zip` for `WEBRTC_TAG`, from the
+/// release's `SHA256SUMS` (format of `sha256sum`).
+pub fn expected_sha256() -> Option<String> {
+    let name = format!("webrtc-{}.zip", webrtc_triple());
+    WEBRTC_SHA256SUMS.lines().find_map(|line| {
+        let mut parts = line.split_whitespace();
+        let hash = parts.next()?;
+        let file = parts.next()?.trim_start_matches('*');
+        (file == name).then(|| hash.to_ascii_lowercase())
+    })
+}
+
+fn sha256_hex(mut file: &File) -> Result<String> {
+    use sha2::{Digest, Sha256};
+    use std::io::{Read, Seek, SeekFrom};
+    file.seek(SeekFrom::Start(0))?;
+    let mut hasher = Sha256::new();
+    let mut buf = [0u8; 1 << 16];
+    loop {
+        let n = file.read(&mut buf)?;
+        if n == 0 {
+            break;
+        }
+        hasher.update(&buf[..n]);
+    }
+    file.seek(SeekFrom::Start(0))?;
+    Ok(hex_lower(&hasher.finalize()))
+}
+
+fn hex_lower(bytes: &[u8]) -> String {
+    bytes.iter().map(|b| format!("{b:02x}")).collect()
 }
 
 /// Used location of libwebrtc depending on whether it's a custom build or not
@@ -209,6 +250,15 @@ pub fn download_webrtc() -> Result<()> {
         return Ok(());
     }
 
+    let expected = expected_sha256().ok_or_else(|| {
+        anyhow!(
+            "no sha256 pinned for webrtc-{}.zip in {} — add it to webrtc-sys/build/SHA256SUMS \
+             from the release, or set LK_CUSTOM_WEBRTC to a local build",
+            webrtc_triple(),
+            WEBRTC_TAG
+        )
+    })?;
+
     let mut resp = reqwest::blocking::get(download_url());
     for attempt in 1..3 {
         let transient = match &resp {
@@ -238,6 +288,18 @@ pub fn download_webrtc() -> Result<()> {
         .open(&tmp_path)
         .context("Failed to create temporary file for WebRTC download")?;
     resp.copy_to(&mut file).context("Failed to write WebRTC download to temporary file")?;
+
+    let actual = sha256_hex(&file).context("Failed to hash WebRTC download")?;
+    if actual != expected {
+        let _ = fs::remove_file(&tmp_path);
+        return Err(anyhow!(
+            "webrtc-{}.zip from {} does not match the pinned sha256: expected {}, got {}",
+            webrtc_triple(),
+            download_url(),
+            expected,
+            actual
+        ));
+    }
 
     // Extract into a sibling temp dir, then atomically rename into place so concurrent
     // observers see either no `webrtc_dir` or a fully-populated one — never the partially-
