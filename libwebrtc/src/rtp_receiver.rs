@@ -41,6 +41,16 @@ impl RtpReceiver {
         self.handle.get_stats().await
     }
 
+    /// VeilMesh (D6): every encoded frame received passes through `transform`
+    /// (depacketizer → decoder). `None` removes it.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn set_frame_transform(
+        &self,
+        transform: Option<std::sync::Arc<dyn crate::frame_transform::FrameTransform>>,
+    ) {
+        self.handle.set_frame_transform(transform)
+    }
+
     pub fn parameters(&self) -> RtpParameters {
         self.handle.parameters()
     }

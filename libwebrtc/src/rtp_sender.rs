@@ -91,6 +91,16 @@ impl RtpSender {
     pub fn set_video_encoder_backend(&self, backend: VideoEncoderBackend) {
         self.handle.set_video_encoder_backend(backend)
     }
+
+    /// VeilMesh (D6): every encoded frame of this sender passes through
+    /// `transform` (encoder → packetizer) before leaving. `None` removes it.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub fn set_frame_transform(
+        &self,
+        transform: Option<std::sync::Arc<dyn crate::frame_transform::FrameTransform>>,
+    ) {
+        self.handle.set_frame_transform(transform)
+    }
 }
 
 impl Debug for RtpSender {

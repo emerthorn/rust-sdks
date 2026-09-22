@@ -28,6 +28,21 @@ pub struct RtpSender {
 }
 
 impl RtpSender {
+    /// VeilMesh (D6): see `crate::rtp_sender::RtpSender::set_frame_transform`.
+    pub fn set_frame_transform(
+        &self,
+        transform: Option<std::sync::Arc<dyn webrtc_sys::frame_transform::FrameTransform>>,
+    ) {
+        use webrtc_sys::frame_transform::{ffi, FrameTransformHandler};
+        match transform {
+            Some(t) => ffi::set_sender_frame_transform(
+                self.sys_handle.clone(),
+                Box::new(FrameTransformHandler::new(t)),
+            ),
+            None => ffi::clear_sender_frame_transform(self.sys_handle.clone()),
+        }
+    }
+
     pub fn track(&self) -> Option<MediaStreamTrack> {
         let track_handle = self.sys_handle.track();
         if track_handle.is_null() {
