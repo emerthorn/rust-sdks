@@ -351,8 +351,31 @@ int32_t AdmProxy::RegisterAudioCallback(webrtc::AudioTransport* transport) {
 }
 
 int32_t AdmProxy::Init() {
-  // Init is a no-op - the sub ADMs are initialized at creation time
-  return 0;
+  // Not a no-op, however tempting: Terminate() below tears down BOTH sub ADMs,
+  // and whoever terminates has every right to init again. libwebrtc does
+  // exactly that between calls — WebRtcVoiceEngine::Init() runs
+  // adm_helpers::Init() on every new audio state — and an ADM left terminated
+  // fails the very first call of that helper: AudioDeviceModuleImpl checks
+  // `initialized_` and answers -1 to SetPlayoutDevice, the helper logs
+  // "Unable to set playout device" and returns BEFORE it ever initializes
+  // recording. The result is a call with no audio streams at all: zero RTP
+  // packets in either direction while video runs untouched. That is the
+  // "second call in the process has no sound" everyone hits once a call ends
+  // and another begins (VeilMesh CF-226).
+  return RunOnWorker([this] {
+    RTC_DCHECK_RUN_ON(worker_thread_);
+    int32_t result = 0;
+    if (synthetic_adm_ && !synthetic_adm_->Initialized()) {
+      result = synthetic_adm_->Init();
+    }
+    if (platform_adm_ && !platform_adm_->Initialized()) {
+      int32_t platform_result = platform_adm_->Init();
+      if (result == 0) {
+        result = platform_result;
+      }
+    }
+    return result;
+  });
 }
 
 int32_t AdmProxy::Terminate() {
