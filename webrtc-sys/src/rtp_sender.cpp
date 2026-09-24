@@ -149,7 +149,10 @@ RtpSender::RtpSender(
       peer_connection_(std::move(peer_connection)) {}
 
 bool RtpSender::set_track(std::shared_ptr<MediaStreamTrack> track) const {
-  return sender_->SetTrack(track->rtc_track().get());
+  // VeilMesh (CF-256): a null track is the documented way to stop a sender
+  // (`replaceTrack(null)` in WebRTC), and the Rust side passes a null
+  // shared_ptr for `None`. Dereferencing it here crashed the process.
+  return sender_->SetTrack(track ? track->rtc_track().get() : nullptr);
 }
 
 std::shared_ptr<MediaStreamTrack> RtpSender::track() const {
