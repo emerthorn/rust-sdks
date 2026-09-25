@@ -32,7 +32,7 @@ pub const SCRATH_PATH: &str = "livekit_webrtc";
 // tag AND sha256. `SHA256SUMS` next to this file is the release's checksum list;
 // a triple missing from it is a hard error (never silently unpinned), unless
 // the caller points `LK_CUSTOM_WEBRTC` at a local build.
-pub const WEBRTC_TAG: &str = "webrtc-89d790b-veilmesh.1";
+pub const WEBRTC_TAG: &str = "webrtc-58963d7-veilmesh.1";
 pub const WEBRTC_RELEASE_BASE: &str =
     "https://github.com/emerthorn/veilmesh-webrtc-build/releases/download";
 const WEBRTC_SHA256SUMS: &str = include_str!("../SHA256SUMS");
