@@ -231,6 +231,7 @@ impl From<proto::IceServer> for IceServer {
             urls: value.urls,
             username: value.username.unwrap_or_default(),
             password: value.password.unwrap_or_default(),
+            hostname: String::new(),
         }
     }
 }

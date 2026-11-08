@@ -133,6 +133,7 @@ impl From<IceServer> for sys_pc::ffi::IceServer {
             urls: value.urls,
             username: value.username,
             password: value.password,
+            hostname: value.hostname,
         }
     }
 }

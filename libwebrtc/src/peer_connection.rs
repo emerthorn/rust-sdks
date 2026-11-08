@@ -288,6 +288,7 @@ mod tests {
                 urls: vec!["stun:stun1.l.google.com:19302".to_string()],
                 username: "".into(),
                 password: "".into(),
+                hostname: "".into(),
             }],
             continual_gathering_policy: ContinualGatheringPolicy::GatherOnce,
             ice_transport_type: IceTransportsType::All,

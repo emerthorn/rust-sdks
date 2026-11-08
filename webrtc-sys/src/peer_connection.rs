@@ -86,6 +86,10 @@ pub mod ffi {
         pub urls: Vec<String>,
         pub username: String,
         pub password: String,
+        /// VeilMesh: the server's name when `urls` hold an IP address
+        /// (`IceServer::hostname` of libwebrtc): TLS sends it as SNI and checks
+        /// the certificate against it. Empty: none.
+        pub hostname: String,
     }
 
     pub struct RtcConfiguration {

@@ -2593,6 +2593,7 @@ macro_rules! make_rtc_config {
                         urls: ice_server.urls,
                         username: ice_server.username,
                         password: ice_server.credential,
+                        hostname: String::new(),
                     })
                 }
             }

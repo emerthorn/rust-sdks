@@ -19,11 +19,16 @@ use crate::{
     rtp_parameters::RtpCapabilities, MediaType, RtcError,
 };
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct IceServer {
     pub urls: Vec<String>,
     pub username: String,
     pub password: String,
+    /// VeilMesh: the server's name when `urls` hold an IP address. libwebrtc
+    /// connects to the IP and uses this name for TLS SNI and the certificate
+    /// check (a `turns:` server reached through a TLS pass-through proxy).
+    /// Empty: the name in the URL, as before.
+    pub hostname: String,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]

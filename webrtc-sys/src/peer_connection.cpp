@@ -40,6 +40,9 @@ webrtc::PeerConnectionInterface::RTCConfiguration to_native_rtc_configuration(
     webrtc::PeerConnectionInterface::IceServer ice_server;
     ice_server.username = item.username.c_str();
     ice_server.password = item.password.c_str();
+    // VeilMesh: `turns:` to an IP (a TLS pass-through proxy) with the TURN
+    // server's own name for SNI and the certificate check.
+    ice_server.hostname = item.hostname.c_str();
 
     for (auto url : item.urls)
       ice_server.urls.emplace_back(url.c_str());
